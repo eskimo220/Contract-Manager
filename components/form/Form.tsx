@@ -22,6 +22,35 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [customData, setCustomData] = useState<CustomData[]>([]);
 
+  const handleAddCustomData = (month: string) => {
+    setCustomData((prevData) => [
+      ...prevData,
+      {
+        month: month,
+        no: 0,
+        person: "worker",
+        manpower: 0,
+        price: 0,
+        total: 0,
+        startDate: new Date(),
+        endDate: new Date(),
+      },
+    ]);
+  };
+
+  // group data based on month
+  const groupData = useMemo(() => {
+    const groupedData = customData.reduce((acc, data) => {
+      const { month } = data;
+      if (!acc[month]) {
+        acc[month] = [];
+      }
+      acc[month].push(data);
+      return acc;
+    }, {} as Record<string, CustomData[]>);
+    return groupedData;
+  }, [customData]);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -45,6 +74,22 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
   const handleCheckboxChange = (value: string[]) => {
     value.sort(); // Sort the value array
     setSelectedMonths(value);
+    value.forEach((month) => {
+      if (!customData.some((data) => data.month === month)) {
+        handleAddCustomData(month);
+      }
+    });
+  };
+
+  const handleModifyCustomData = (
+    groupData: CustomData,
+    key: string,
+    value: any
+  ) => {
+    const index = customData.findIndex((data) => data === groupData);
+    const newCustomData = [...customData];
+    newCustomData[index] = { ...groupData, [key]: value };
+    setCustomData(newCustomData);
   };
 
   return (
@@ -76,8 +121,18 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
       {selectedMonths.map((month) => (
         <Card key={month}>
           <CardBody>
-            <p>{month}</p>
-            <Input isRequired label="name" />
+            <Input
+              isRequired
+              label="name"
+              value={groupData[month][0].person}
+              onChange={(v) =>
+                handleModifyCustomData(
+                  groupData[month][0],
+                  "person",
+                  v.target.value
+                )
+              }
+            />
           </CardBody>
         </Card>
       ))}
