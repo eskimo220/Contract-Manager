@@ -1,8 +1,12 @@
+"use client";
 import React, { useMemo, useState } from "react";
 import { Input } from "@nextui-org/input";
-import { Card, CardBody } from "@nextui-org/react";
+import { Card, CardBody, CardHeader, Divider } from "@nextui-org/react";
 import { CheckboxGroup, Checkbox } from "@nextui-org/react";
-
+import { DateRangePicker } from "@nextui-org/react";
+import { RangeValue } from "@react-types/shared";
+import { DateValue } from "@react-types/datepicker";
+import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 interface FormProps {
   onSubmit: (data: any) => void;
 }
@@ -14,8 +18,8 @@ interface CustomData {
   manpower: number;
   price: number;
   total: number;
-  startDate: Date;
-  endDate: Date;
+  start: DateValue;
+  end: DateValue;
 }
 
 const Form: React.FC<FormProps> = ({ onSubmit }) => {
@@ -32,8 +36,8 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
         manpower: 0,
         price: 0,
         total: 0,
-        startDate: new Date(),
-        endDate: new Date(),
+        start: today(getLocalTimeZone()),
+        end: today(getLocalTimeZone()),
       },
     ]);
   };
@@ -120,19 +124,27 @@ const Form: React.FC<FormProps> = ({ onSubmit }) => {
       </Card>
       {selectedMonths.map((month) => (
         <Card key={month}>
+          <CardHeader>
+            <h3>{month}</h3>
+          </CardHeader>
+          <Divider></Divider>
           <CardBody>
-            <Input
-              isRequired
-              label="name"
-              value={groupData[month][0].person}
-              onChange={(v) =>
-                handleModifyCustomData(
-                  groupData[month][0],
-                  "person",
-                  v.target.value
-                )
-              }
-            />
+            <div>
+              <DateRangePicker label="duration" className="max-w-xs" />
+              <Input isRequired label="name" />
+              <Input
+                isRequired
+                label="name"
+                value={groupData[month][0].person}
+                onChange={(v) =>
+                  handleModifyCustomData(
+                    groupData[month][0],
+                    "person",
+                    v.target.value
+                  )
+                }
+              />
+            </div>
           </CardBody>
         </Card>
       ))}
